@@ -1,0 +1,32 @@
+# Production compose file deployed to /srv/pooldigital-mock/docker-compose.yml
+# by .github/workflows/deploy.yml. Both ports bind to the host's loopback only;
+# the VPS-side nginx terminates TLS and reverse-proxies to these addresses.
+#
+#   proconip.mock.pool.labonte.cloud → 127.0.0.1:8080  (basic auth)
+#   violet.mock.pool.labonte.cloud   → 127.0.0.1:8180  (mostly anonymous)
+#
+# IMAGE_TAG defaults to "edge" (HEAD of main). Pin to a release tag by
+# editing /srv/pooldigital-mock/.env on the VPS, e.g. IMAGE_TAG=v0.1.0.
+
+services:
+  pooldigital-mock:
+    image: ghcr.io/ylabonte/pooldigital-mock:${IMAGE_TAG:-edge}
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8080:8080"
+      - "127.0.0.1:8180:8180"
+    environment:
+      PROCONIP_MOCK_USER: ${PROCONIP_MOCK_USER:-admin}
+      PROCONIP_MOCK_PASS: ${PROCONIP_MOCK_PASS:-admin}
+      MYVIOLET_MOCK_USER: ${MYVIOLET_MOCK_USER:-admin}
+      MYVIOLET_MOCK_PASS: ${MYVIOLET_MOCK_PASS:-admin}
+    command:
+      - --host=0.0.0.0
+      - --proconip-port=8080
+      - --violet-port=8180
+      - --no-color
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"

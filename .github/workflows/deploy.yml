@@ -1,0 +1,98 @@
+name: Deploy
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    branches: [main]
+    types: [completed]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-${{ github.workflow }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+
+      - name: install ssh key
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+        run: |
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
+          ssh-keyscan -p "$SSH_PORT" "$SSH_HOST" >> ~/.ssh/known_hosts
+
+      - name: scp compose file
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'mkdir -p /srv/pooldigital-mock'
+          scp -P "$SSH_PORT" deploy/docker-compose.prod.yml \
+            "$SSH_USER@$SSH_HOST:/srv/pooldigital-mock/docker-compose.yml"
+
+      - name: write .env on host
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+          PROCONIP_MOCK_USER: ${{ secrets.PROCONIP_MOCK_USER }}
+          PROCONIP_MOCK_PASS: ${{ secrets.PROCONIP_MOCK_PASS }}
+          MYVIOLET_MOCK_USER: ${{ secrets.MYVIOLET_MOCK_USER }}
+          MYVIOLET_MOCK_PASS: ${{ secrets.MYVIOLET_MOCK_PASS }}
+        run: |
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "cat > /srv/pooldigital-mock/.env" <<EOF
+          IMAGE_TAG=edge
+          PROCONIP_MOCK_USER=${PROCONIP_MOCK_USER}
+          PROCONIP_MOCK_PASS=${PROCONIP_MOCK_PASS}
+          MYVIOLET_MOCK_USER=${MYVIOLET_MOCK_USER}
+          MYVIOLET_MOCK_PASS=${MYVIOLET_MOCK_PASS}
+          EOF
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" 'chmod 600 /srv/pooldigital-mock/.env'
+
+      - name: pull + restart
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" '
+            set -euo pipefail
+            cd /srv/pooldigital-mock
+            docker compose pull
+            docker compose up -d --remove-orphans
+            docker image prune -f
+          '
+
+      - name: smoke test
+        env:
+          SSH_HOST: ${{ secrets.SSH_HOST }}
+          SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
+          SSH_USER: ${{ secrets.SSH_USER }}
+        run: |
+          ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" '
+            set -euo pipefail
+            for i in 1 2 3 4 5; do
+              if curl -fsS "http://127.0.0.1:8180/getReadings?ALL" >/dev/null; then
+                echo "violet OK"
+                exit 0
+              fi
+              sleep 2
+            done
+            echo "violet not responding on 127.0.0.1:8180" >&2
+            cd /srv/pooldigital-mock && docker compose logs --tail=50
+            exit 1
+          '

@@ -11,6 +11,10 @@ coverage.html
 *.test
 *.prof
 
+# Local docker env overrides (the production deploy uses
+# /srv/pooldigital-mock/.env on the VPS, never committed here)
+.env
+
 # Editor / OS
 .DS_Store
 .idea/
