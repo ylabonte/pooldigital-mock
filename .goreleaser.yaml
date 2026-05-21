@@ -52,6 +52,8 @@ dockers:
   - image_templates:
       - "ghcr.io/ylabonte/pooldigital-mock:{{ .Version }}-amd64"
       - "ghcr.io/ylabonte/pooldigital-mock:latest-amd64"
+      - "docker.io/labonte/pooldigital-mock:{{ .Version }}-amd64"
+      - "docker.io/labonte/pooldigital-mock:latest-amd64"
     use: buildx
     goos: linux
     goarch: amd64
@@ -69,6 +71,8 @@ dockers:
   - image_templates:
       - "ghcr.io/ylabonte/pooldigital-mock:{{ .Version }}-arm64"
       - "ghcr.io/ylabonte/pooldigital-mock:latest-arm64"
+      - "docker.io/labonte/pooldigital-mock:{{ .Version }}-arm64"
+      - "docker.io/labonte/pooldigital-mock:latest-arm64"
     use: buildx
     goos: linux
     goarch: arm64
@@ -92,6 +96,14 @@ docker_manifests:
     image_templates:
       - "ghcr.io/ylabonte/pooldigital-mock:latest-amd64"
       - "ghcr.io/ylabonte/pooldigital-mock:latest-arm64"
+  - name_template: "docker.io/labonte/pooldigital-mock:{{ .Version }}"
+    image_templates:
+      - "docker.io/labonte/pooldigital-mock:{{ .Version }}-amd64"
+      - "docker.io/labonte/pooldigital-mock:{{ .Version }}-arm64"
+  - name_template: "docker.io/labonte/pooldigital-mock:latest"
+    image_templates:
+      - "docker.io/labonte/pooldigital-mock:latest-amd64"
+      - "docker.io/labonte/pooldigital-mock:latest-arm64"
 
 release:
   draft: false
