@@ -2,22 +2,23 @@ package proconip
 
 import "math"
 
-// Drift constants — ported from
-// proconip-pypi/tools/proconip_mock/drift.py. The model is
-// `center + amplitude * sin(2π * t / period)`, deterministic and stateless.
+// Drift constants — `center + amplitude * sin(2π * t / period)`,
+// deterministic and stateless. Centers are aligned with the Violet seed
+// (internal/violet/seed/getReadings_seed.json) so a single test that hits
+// both mocks sees consistent values across the two controllers.
 const (
-	phCenter        = 7.40
-	phAmplitude     = 0.10
+	phCenter        = 7.31 // Violet pH_value_min/max = 7.30/7.32
+	phAmplitude     = 0.05
 	phPeriodSeconds = 600.0
 
-	redoxCenterMV     = 700.0
-	redoxAmplitudeMV  = 25.0
+	redoxCenterMV     = 787.0 // Violet orp_value_min/max = 787.2/787.6
+	redoxAmplitudeMV  = 15.0
 	redoxPeriodSecond = 300.0
 
-	cpuTempCenterC     = 30.0
+	cpuTempCenterC     = 48.0 // Violet SYSTEM_cpu_temperature = 48.2
 	cpuTempAmplitudeC  = 2.0
 	cpuTempPeriodSec   = 1800.0
-	pumpTempCenterC    = 27.0
+	pumpTempCenterC    = 30.0 // Violet onewire1_value = 30.2 (pool water)
 	pumpTempAmplitudeC = 1.0
 	pumpTempPeriodSec  = 1800.0
 )

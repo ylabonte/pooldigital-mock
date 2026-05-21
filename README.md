@@ -107,7 +107,7 @@ curl              http://localhost:8180/getReadings?ALL
 | `POST /usrcfg.cgi` | basic | accepts `ENA=...` relay or `CH1_8=...&CH9_16=...` DMX writes |
 | `GET /Command.htm?MAN_DOSAGE=t,s` | basic | manual dosage trigger |
 
-Sensors drift on slow sine waves (pH 7.30–7.50, redox 675–725 mV, CPU temp 28–32 °C, pump temp 26–28 °C).
+Sensors drift on slow sine waves (pH 7.26–7.36, redox 772–802 mV, CPU temp 46–50 °C, pool water 29–31 °C) — aligned with the Violet seed so test data is consistent across both mocks.
 
 ### violet (`:8180`)
 
