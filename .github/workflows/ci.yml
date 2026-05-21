@@ -19,9 +19,9 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         go: ["1.23", "1.24"]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: ${{ matrix.go }}
           cache: true
@@ -93,7 +93,7 @@ jobs:
 
       - name: upload coverage + junit artifact
         if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.24'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: |
@@ -103,7 +103,7 @@ jobs:
 
       - name: upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.go == '1.24'
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@v6
         with:
           files: ./coverage.out
           fail_ci_if_error: false
@@ -111,7 +111,7 @@ jobs:
 
       - name: test report (per-test annotations)
         if: always() && hashFiles('test-results/junit.xml') != ''
-        uses: dorny/test-reporter@v1
+        uses: dorny/test-reporter@v3
         with:
           name: tests (${{ matrix.os }} / go ${{ matrix.go }})
           path: test-results/junit.xml
@@ -122,14 +122,14 @@ jobs:
     name: lint
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.24"
           cache: true
 
-      - uses: golangci/golangci-lint-action@v7
+      - uses: golangci/golangci-lint-action@v9
         with:
           version: v2.0.2
 
@@ -138,9 +138,9 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, lint]
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version: "1.24"
           cache: true
@@ -148,7 +148,7 @@ jobs:
       - name: build
         run: CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o pooldigital-mock ./cmd/pooldigital-mock
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: pooldigital-mock-linux-amd64
           path: pooldigital-mock
@@ -163,19 +163,19 @@ jobs:
       contents: read
       packages: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: docker/setup-buildx-action@v3
+      - uses: docker/setup-buildx-action@v4
 
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: build + push
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: .
           file: ./Dockerfile
