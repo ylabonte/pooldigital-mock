@@ -10,9 +10,9 @@ RUN rm -f /etc/apt/sources.list.d/yarn.list /etc/apt/trusted.gpg.d/yarn-keyring.
     && rm -rf /var/lib/apt/lists/*
 
 # Pinned tooling versions — keep in sync with .github/workflows/ci.yml.
-ARG GOLANGCI_LINT_VERSION=v2.0.2
+ARG GOLANGCI_LINT_VERSION=v2.12.2
 ARG GORELEASER_VERSION=v2.5.1
-ARG GOTESTSUM_VERSION=v1.12.0
+ARG GOTESTSUM_VERSION=v1.13.0
 # Delve's release number tracks the highest Go minor it supports — older
 # pins refuse to debug newer Go binaries with "Version of Delve is too old
 # for Go version goX.Y.Z". Pin to the latest series that matches our Go.
