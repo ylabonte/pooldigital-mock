@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 # Stage 1: build the static binary inside a Go toolchain image.
-FROM golang:1.24-alpine AS build
+FROM golang:1.26-alpine AS build
 
 WORKDIR /src
 
