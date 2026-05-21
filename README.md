@@ -42,6 +42,20 @@ docker run --rm -p 8080:8080 -p 8180:8180 ghcr.io/ylabonte/pooldigital-mock:late
 
 Both registries publish `latest` plus a tag per release (e.g. `:v0.1.0`); they're built from the same goreleaser run, so the digests match.
 
+### Hosted demo
+
+A live instance is auto-deployed from `main`:
+
+- ProCon.IP — <https://proconip.mock.pool.labonte.cloud>
+- Violet — <https://violet.mock.pool.labonte.cloud>
+
+Auth defaults to `admin` / `admin`. The violet `GET /getReadings?ALL` endpoint is anonymous, so you can curl it without credentials:
+
+```bash
+curl -fsS 'https://violet.mock.pool.labonte.cloud/getReadings?ALL' | head
+curl -fsS -u admin:admin https://proconip.mock.pool.labonte.cloud/GetState.csv | head
+```
+
 ### Pre-built binary
 
 Download from [Releases](https://github.com/ylabonte/pooldigital-mock/releases) — `linux`, `macOS`, `windows` × `amd64`, `arm64` (no `windows/arm64`).
