@@ -1,5 +1,14 @@
 FROM mcr.microsoft.com/devcontainers/go:1-1.24-bookworm
 
+# The MS Go devcontainer image ships an apt source for Yarn whose GPG key has
+# expired in the published layer, so any subsequent `apt-get update` (including
+# the ones devcontainer features run) fails with NO_PUBKEY 62D54FD4003F6525.
+# We don't use Yarn here — drop the source list and refresh the cache so
+# downstream feature scripts see a clean apt state.
+RUN rm -f /etc/apt/sources.list.d/yarn.list /etc/apt/trusted.gpg.d/yarn-keyring.gpg \
+    && apt-get update \
+    && rm -rf /var/lib/apt/lists/*
+
 # Pinned tooling versions — keep in sync with .github/workflows/ci.yml.
 ARG GOLANGCI_LINT_VERSION=v2.0.2
 ARG GORELEASER_VERSION=v2.5.1
