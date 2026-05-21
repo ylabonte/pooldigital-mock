@@ -1,5 +1,14 @@
 # pooldigital-mock
 
+[![CI](https://github.com/ylabonte/pooldigital-mock/actions/workflows/ci.yml/badge.svg)](https://github.com/ylabonte/pooldigital-mock/actions/workflows/ci.yml)
+[![Release](https://github.com/ylabonte/pooldigital-mock/actions/workflows/release.yml/badge.svg)](https://github.com/ylabonte/pooldigital-mock/actions/workflows/release.yml)
+[![Latest release](https://img.shields.io/github/v/release/ylabonte/pooldigital-mock?display_name=tag&sort=semver)](https://github.com/ylabonte/pooldigital-mock/releases)
+[![Go Reference](https://pkg.go.dev/badge/github.com/ylabonte/pooldigital-mock.svg)](https://pkg.go.dev/github.com/ylabonte/pooldigital-mock)
+[![Go Report Card](https://goreportcard.com/badge/github.com/ylabonte/pooldigital-mock)](https://goreportcard.com/report/github.com/ylabonte/pooldigital-mock)
+[![Go version](https://img.shields.io/github/go-mod/go-version/ylabonte/pooldigital-mock)](go.mod)
+[![Docker Pulls](https://img.shields.io/docker/pulls/labonte/pooldigital-mock)](https://hub.docker.com/r/labonte/pooldigital-mock)
+[![License: MIT](https://img.shields.io/github/license/ylabonte/pooldigital-mock)](LICENSE)
+
 One lightweight Go binary that runs two pool-controller mocks concurrently:
 
 - **proconip** on port `8080` — mimics a [ProCon.IP](https://pooldigital.de) pool controller (CSV + basic auth)
@@ -17,16 +26,25 @@ Both vendors ship Python mocks inside their respective client repos. This projec
 
 ## Install
 
-### Pre-built binary
-
-Download from [Releases](https://github.com/ylabonte/pooldigital-mock/releases) (linux/macos/windows, amd64 + arm64).
-
 ### Docker
 
+The fastest path — one command, no toolchain required:
+
 ```bash
-docker run --rm -p 8080:8080 -p 8180:8180 \
-  ghcr.io/ylabonte/pooldigital-mock:latest
+docker run --rm -p 8080:8080 -p 8180:8180 labonte/pooldigital-mock
 ```
+
+The same multi-arch image is mirrored on GitHub Container Registry if you'd rather pull from there:
+
+```bash
+docker run --rm -p 8080:8080 -p 8180:8180 ghcr.io/ylabonte/pooldigital-mock:latest
+```
+
+Both registries publish `latest` plus a tag per release (e.g. `:v0.1.0`); they're built from the same goreleaser run, so the digests match.
+
+### Pre-built binary
+
+Download from [Releases](https://github.com/ylabonte/pooldigital-mock/releases) — `linux`, `macOS`, `windows` × `amd64`, `arm64` (no `windows/arm64`).
 
 ### From source
 
@@ -107,23 +125,29 @@ Drift applies to `pH_value`, `orp_value`, `pot_value`, `CPU_TEMP`. Seed snapshot
 ## Run via Docker
 
 ```bash
-# default ports
+# default ports, Docker Hub
+docker run --rm -p 8080:8080 -p 8180:8180 labonte/pooldigital-mock
+
+# pin to a release tag (recommended for CI)
+docker run --rm -p 8080:8080 -p 8180:8180 labonte/pooldigital-mock:v0.1.0
+
+# same image, from GHCR
 docker run --rm -p 8080:8080 -p 8180:8180 ghcr.io/ylabonte/pooldigital-mock:latest
 
-# customise credentials
+# customise credentials + quiet output
 docker run --rm -p 8080:8080 -p 8180:8180 \
   -e PROCONIP_MOCK_USER=alice -e PROCONIP_MOCK_PASS=secret \
-  ghcr.io/ylabonte/pooldigital-mock:latest --quiet
+  labonte/pooldigital-mock --quiet
 
 # build locally
 make docker && docker run --rm -p 8080:8080 -p 8180:8180 pooldigital-mock:dev
 ```
 
-The production image is built from `gcr.io/distroless/static:nonroot` — no shell, no package manager, ~10 MB compressed.
+The production image is built from `gcr.io/distroless/static:nonroot` — no shell, no package manager, ~10 MB compressed. Multi-arch manifests cover `linux/amd64` and `linux/arm64`; docker picks the right one automatically.
 
 ## Develop in a container
 
-The repo ships a [devcontainer](https://containers.dev/) so you can clone, "Reopen in Container" in VS Code (or open in GitHub Codespaces), and have Go, golangci-lint, goreleaser, gotestsum, and delve preinstalled.
+The repo ships a [devcontainer](https://containers.dev/) so you can clone, "Reopen in Container" in VS Code (or open in [GitHub Codespaces](https://github.com/codespaces/new?repo=ylabonte/pooldigital-mock)), and have Go, `golangci-lint`, `goreleaser`, `gotestsum`, `delve`, and `goimports` preinstalled. The container forwards ports `8080` and `8180` automatically.
 
 ```bash
 # from a host with the devcontainer CLI
@@ -132,17 +156,25 @@ devcontainer up --workspace-folder .
 devcontainer exec --workspace-folder . make test
 ```
 
+A `.vscode/` set is checked in too: `launch.json` has seven run/debug configurations (default + custom ports + quiet, plus test-by-name and attach-by-pid), `tasks.json` wires the Make targets to `Cmd/Ctrl+Shift+B`, and `settings.json` enforces `goimports` + format-on-save + golangci-lint workspace integration.
+
 ## Development
 
 ```bash
-make test    # go test -race ./...
-make cover   # enforce 85% coverage floor
-make lint    # golangci-lint
-make build   # produces ./pooldigital-mock
-make run     # go run ./cmd/pooldigital-mock
+make test         # go test -race ./...
+make cover        # race + coverage, fail if total < 85%
+make cover-html   # render coverage.html
+make lint         # golangci-lint
+make vet          # go vet ./...
+make fmt          # gofmt -s -w .
+make build        # static binary → ./pooldigital-mock
+make run          # go run ./cmd/pooldigital-mock
+make docker       # build the production OCI image (tag pooldigital-mock:dev)
+make docker-run   # build + run the image with both ports forwarded
+make help         # list every target with its one-line summary
 ```
 
-See [`CLAUDE.md`](./CLAUDE.md) for coding standards.
+See [`CLAUDE.md`](./CLAUDE.md) for coding standards (architecture rules, testing rules, commit style, when to invoke each Claude superpower).
 
 ## License
 
