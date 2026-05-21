@@ -1,0 +1,12 @@
+# Release-time Dockerfile fed by goreleaser. Goreleaser builds the binary
+# externally and copies it into the image, so this just packages the
+# prebuilt artifact.
+FROM gcr.io/distroless/static:nonroot
+
+COPY pooldigital-mock /pooldigital-mock
+
+EXPOSE 8080 8180
+
+USER nonroot:nonroot
+
+ENTRYPOINT ["/pooldigital-mock"]

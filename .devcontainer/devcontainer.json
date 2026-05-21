@@ -1,0 +1,41 @@
+{
+  "name": "pooldigital-mock",
+  "build": {
+    "dockerfile": "Dockerfile"
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {},
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  },
+  "remoteUser": "vscode",
+  "forwardPorts": [8080, 8180],
+  "portsAttributes": {
+    "8080": {
+      "label": "proconip"
+    },
+    "8180": {
+      "label": "violet"
+    }
+  },
+  "postCreateCommand": "go mod download && go build ./...",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "ms-azuretools.vscode-docker",
+        "github.vscode-github-actions",
+        "editorconfig.editorconfig"
+      ],
+      "settings": {
+        "go.useLanguageServer": true,
+        "go.lintTool": "golangci-lint",
+        "go.lintOnSave": "workspace",
+        "go.formatTool": "goimports",
+        "editor.formatOnSave": true,
+        "[go]": {
+          "editor.defaultFormatter": "golang.go"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,98 @@
+# GoReleaser config — produces multi-arch binaries and OCI images on tag pushes.
+# Local dry run: goreleaser release --snapshot --clean
+version: 2
+
+project_name: pooldigital-mock
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: pooldigital-mock
+    main: ./cmd/pooldigital-mock
+    binary: pooldigital-mock
+    env:
+      - CGO_ENABLED=0
+    flags:
+      - -trimpath
+    ldflags:
+      - -s -w -X main.version={{ .Version }}
+    goos: [linux, darwin, windows]
+    goarch: [amd64, arm64]
+    ignore:
+      - goos: windows
+        goarch: arm64
+
+archives:
+  - formats: [tar.gz]
+    name_template: >-
+      {{ .ProjectName }}_{{ .Version }}_{{ .Os }}_{{ .Arch }}
+    format_overrides:
+      - goos: windows
+        formats: [zip]
+
+checksum:
+  name_template: "checksums.txt"
+  algorithm: sha256
+
+snapshot:
+  version_template: "{{ incpatch .Version }}-next"
+
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - "^docs:"
+      - "^test:"
+      - "^ci:"
+      - "^chore:"
+
+dockers:
+  - image_templates:
+      - "ghcr.io/yannicschroeer/pooldigital-mock:{{ .Version }}-amd64"
+      - "ghcr.io/yannicschroeer/pooldigital-mock:latest-amd64"
+    use: buildx
+    goos: linux
+    goarch: amd64
+    dockerfile: Dockerfile.release
+    build_flag_templates:
+      - "--platform=linux/amd64"
+      - "--label=org.opencontainers.image.title=pooldigital-mock"
+      - "--label=org.opencontainers.image.description=Combined ProCon.IP + Violet pool-controller mocks"
+      - "--label=org.opencontainers.image.url=https://github.com/yannicschroeer/pooldigital-mock"
+      - "--label=org.opencontainers.image.source=https://github.com/yannicschroeer/pooldigital-mock"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+
+  - image_templates:
+      - "ghcr.io/yannicschroeer/pooldigital-mock:{{ .Version }}-arm64"
+      - "ghcr.io/yannicschroeer/pooldigital-mock:latest-arm64"
+    use: buildx
+    goos: linux
+    goarch: arm64
+    dockerfile: Dockerfile.release
+    build_flag_templates:
+      - "--platform=linux/arm64"
+      - "--label=org.opencontainers.image.title=pooldigital-mock"
+      - "--label=org.opencontainers.image.description=Combined ProCon.IP + Violet pool-controller mocks"
+      - "--label=org.opencontainers.image.url=https://github.com/yannicschroeer/pooldigital-mock"
+      - "--label=org.opencontainers.image.source=https://github.com/yannicschroeer/pooldigital-mock"
+      - "--label=org.opencontainers.image.version={{ .Version }}"
+      - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
+      - "--label=org.opencontainers.image.licenses=MIT"
+
+docker_manifests:
+  - name_template: "ghcr.io/yannicschroeer/pooldigital-mock:{{ .Version }}"
+    image_templates:
+      - "ghcr.io/yannicschroeer/pooldigital-mock:{{ .Version }}-amd64"
+      - "ghcr.io/yannicschroeer/pooldigital-mock:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/yannicschroeer/pooldigital-mock:latest"
+    image_templates:
+      - "ghcr.io/yannicschroeer/pooldigital-mock:latest-amd64"
+      - "ghcr.io/yannicschroeer/pooldigital-mock:latest-arm64"
+
+release:
+  draft: false
+  prerelease: auto

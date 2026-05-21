@@ -1,0 +1,41 @@
+version: "2"
+
+run:
+  timeout: 5m
+
+linters:
+  default: none
+  enable:
+    - errcheck
+    - govet
+    - ineffassign
+    - staticcheck
+    - unused
+    - bodyclose
+    - errorlint
+    - gocritic
+    - gosec
+    - misspell
+    - revive
+    - unparam
+
+  settings:
+    gosec:
+      excludes:
+        - G104 # already covered by errcheck where it matters
+    revive:
+      rules:
+        - name: exported
+          arguments: ["disableStutteringCheck"]
+        - name: var-naming
+        - name: unused-parameter
+          disabled: true
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
