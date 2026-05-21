@@ -1,0 +1,16 @@
+# Force LF line endings on every text file so cross-platform checkouts
+# (especially Windows with autocrlf=true) don't mangle embedded fixtures.
+# The CSVs under internal/proconip/ are slurped verbatim via //go:embed
+# and compared as strings in csv_test.go — CRLF on Windows breaks those
+# byte-exact comparisons.
+* text=auto eol=lf
+
+# Explicit pins for the fixtures the embed directive depends on, so even
+# a user-local override of the global rule above can't silently break
+# the test suite on a contributor's Windows checkout.
+*.csv  text eol=lf
+*.json text eol=lf
+*.go   text eol=lf
+*.md   text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
