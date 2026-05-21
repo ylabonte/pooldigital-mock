@@ -86,13 +86,13 @@ jobs:
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" '
             set -euo pipefail
             for i in 1 2 3 4 5; do
-              if curl -fsS "http://127.0.0.1:8180/getReadings?ALL" >/dev/null; then
+              if curl -fsS "http://127.0.0.1:18180/getReadings?ALL" >/dev/null; then
                 echo "violet OK"
                 exit 0
               fi
               sleep 2
             done
-            echo "violet not responding on 127.0.0.1:8180" >&2
+            echo "violet not responding on 127.0.0.1:18180" >&2
             cd /srv/pooldigital-mock && docker compose logs --tail=50
             exit 1
           '

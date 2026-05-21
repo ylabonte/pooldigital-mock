@@ -2,8 +2,12 @@
 # by .github/workflows/deploy.yml. Both ports bind to the host's loopback only;
 # the VPS-side nginx terminates TLS and reverse-proxies to these addresses.
 #
-#   proconip.mock.pool.labonte.cloud → 127.0.0.1:8080  (basic auth)
-#   violet.mock.pool.labonte.cloud   → 127.0.0.1:8180  (mostly anonymous)
+#   proconip.mock.pool.labonte.cloud → 127.0.0.1:18080  (basic auth)
+#   violet.mock.pool.labonte.cloud   → 127.0.0.1:18180  (mostly anonymous)
+#
+# The host-side ports use the 1808x range because the VPS already runs other
+# services on the conventional 8080/8180. Inside the container the binary
+# still listens on 8080 / 8180 — only the host-side mapping moves.
 #
 # IMAGE_TAG defaults to "edge" (HEAD of main). Pin to a release tag by
 # editing /srv/pooldigital-mock/.env on the VPS, e.g. IMAGE_TAG=v0.1.0.
@@ -13,8 +17,8 @@ services:
     image: ghcr.io/ylabonte/pooldigital-mock:${IMAGE_TAG:-edge}
     restart: unless-stopped
     ports:
-      - "127.0.0.1:8080:8080"
-      - "127.0.0.1:8180:8180"
+      - "127.0.0.1:18080:8080"
+      - "127.0.0.1:18180:8180"
     environment:
       PROCONIP_MOCK_USER: ${PROCONIP_MOCK_USER:-admin}
       PROCONIP_MOCK_PASS: ${PROCONIP_MOCK_PASS:-admin}
