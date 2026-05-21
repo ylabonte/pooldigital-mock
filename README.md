@@ -39,7 +39,7 @@ The same multi-arch image is mirrored on GitHub Container Registry if you'd rath
 docker run --rm -p 8080:8080 -p 8180:8180 ghcr.io/ylabonte/pooldigital-mock:latest
 ```
 
-Both registries publish `latest` plus a tag per release (e.g. `:v0.1.0`); they're built from the same goreleaser run, so the digests match.
+Both registries publish `latest` plus a tag per release (e.g. `:0.1.0` — goreleaser strips the leading `v` from image tags by convention; the corresponding git tag is `v0.1.0`); they're built from the same goreleaser run, so the digests match.
 
 ### Pre-built binary
 
@@ -128,7 +128,7 @@ Drift applies to `pH_value`, `orp_value`, `pot_value`, `CPU_TEMP`. Seed snapshot
 docker run --rm -p 8080:8080 -p 8180:8180 labonte/pooldigital-mock
 
 # pin to a release tag (recommended for CI)
-docker run --rm -p 8080:8080 -p 8180:8180 labonte/pooldigital-mock:v0.1.0
+docker run --rm -p 8080:8080 -p 8180:8180 labonte/pooldigital-mock:0.1.0
 
 # same image, from GHCR
 docker run --rm -p 8080:8080 -p 8180:8180 ghcr.io/ylabonte/pooldigital-mock:latest
