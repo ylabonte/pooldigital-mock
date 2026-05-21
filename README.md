@@ -6,7 +6,6 @@
 [![Go Reference](https://pkg.go.dev/badge/github.com/ylabonte/pooldigital-mock.svg)](https://pkg.go.dev/github.com/ylabonte/pooldigital-mock)
 [![Go Report Card](https://goreportcard.com/badge/github.com/ylabonte/pooldigital-mock)](https://goreportcard.com/report/github.com/ylabonte/pooldigital-mock)
 [![Go version](https://img.shields.io/github/go-mod/go-version/ylabonte/pooldigital-mock)](go.mod)
-[![Docker Pulls](https://img.shields.io/docker/pulls/labonte/pooldigital-mock)](https://hub.docker.com/r/labonte/pooldigital-mock)
 [![License: MIT](https://img.shields.io/github/license/ylabonte/pooldigital-mock)](LICENSE)
 
 One lightweight Go binary that runs two pool-controller mocks concurrently:
@@ -41,20 +40,6 @@ docker run --rm -p 8080:8080 -p 8180:8180 ghcr.io/ylabonte/pooldigital-mock:late
 ```
 
 Both registries publish `latest` plus a tag per release (e.g. `:v0.1.0`); they're built from the same goreleaser run, so the digests match.
-
-### Hosted demo
-
-A live instance is auto-deployed from `main`:
-
-- ProCon.IP — <https://proconip.mock.pool.labonte.cloud>
-- Violet — <https://violet.mock.pool.labonte.cloud>
-
-Auth defaults to `admin` / `admin`. The violet `GET /getReadings?ALL` endpoint is anonymous, so you can curl it without credentials:
-
-```bash
-curl -fsS 'https://violet.mock.pool.labonte.cloud/getReadings?ALL' | head
-curl -fsS -u admin:admin https://proconip.mock.pool.labonte.cloud/GetState.csv | head
-```
 
 ### Pre-built binary
 
@@ -157,7 +142,7 @@ docker run --rm -p 8080:8080 -p 8180:8180 \
 make docker && docker run --rm -p 8080:8080 -p 8180:8180 pooldigital-mock:dev
 ```
 
-The production image is built from `gcr.io/distroless/static:nonroot` — no shell, no package manager, ~10 MB compressed. Multi-arch manifests cover `linux/amd64` and `linux/arm64`; docker picks the right one automatically.
+The production image is built from `gcr.io/distroless/static:nonroot` — no shell, no package manager, ~16 MB on disk and ~7 MB compressed at the registry. Multi-arch manifests cover `linux/amd64` and `linux/arm64`; docker picks the right one automatically.
 
 ## Develop in a container
 
