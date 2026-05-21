@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  checks: write    # dorny/test-reporter writes per-test annotations
 
 jobs:
   test:
@@ -31,8 +32,18 @@ jobs:
       - name: go vet
         run: go vet ./...
 
-      - name: test (race + coverage)
-        run: go test -race -coverprofile=coverage.out -covermode=atomic ./...
+      - name: install gotestsum
+        shell: bash
+        run: go install gotest.tools/gotestsum@v1.13.0
+
+      - name: test (race + coverage + junit)
+        shell: bash
+        run: |
+          mkdir -p test-results
+          gotestsum \
+            --format pkgname-and-test-fails \
+            --junitfile test-results/junit.xml \
+            -- -race -covermode=atomic -coverprofile=coverage.out ./...
 
       - name: enforce coverage floor
         if: matrix.os == 'ubuntu-latest' && matrix.go == '1.24'
@@ -45,13 +56,67 @@ jobs:
             exit 1
           }
 
-      - name: upload coverage
+      - name: write test + coverage summary
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.24'
+        shell: bash
+        run: |
+          total=$(go tool cover -func=coverage.out | awk '/^total:/ {print $3}')
+          {
+            echo "## Test + coverage"
+            echo
+            echo "**Total coverage:** ${total}"
+            echo
+            echo "### Per-package coverage"
+            echo
+            echo "| Package | Coverage |"
+            echo "|---------|----------|"
+            awk '
+              NR == 1 { next }
+              {
+                split($1, a, ":")
+                file = a[1]
+                n = split(file, parts, "/")
+                pkg = parts[1]
+                for (i = 2; i < n; i++) pkg = pkg "/" parts[i]
+                stmts = $2; execs = $3
+                total[pkg] += stmts
+                if (execs > 0) covered[pkg] += stmts
+              }
+              END {
+                for (p in total) printf "%s\t%.1f\n", p, (covered[p] / total[p]) * 100
+              }
+            ' coverage.out \
+              | sed -E "s|^github\\.com/[^/]+/[^/]+/||" \
+              | sort \
+              | awk -F'\t' '{ printf "| `%s` | %s%% |\n", $1, $2 }'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: upload coverage + junit artifact
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.24'
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            coverage.out
+            test-results/junit.xml
+          retention-days: 14
+
+      - name: upload coverage to Codecov
         if: matrix.os == 'ubuntu-latest' && matrix.go == '1.24'
         uses: codecov/codecov-action@v5
         with:
           files: ./coverage.out
           fail_ci_if_error: false
         continue-on-error: true
+
+      - name: test report (per-test annotations)
+        if: always() && hashFiles('test-results/junit.xml') != ''
+        uses: dorny/test-reporter@v1
+        with:
+          name: tests (${{ matrix.os }} / go ${{ matrix.go }})
+          path: test-results/junit.xml
+          reporter: java-junit
+          fail-on-error: false
 
   lint:
     name: lint
