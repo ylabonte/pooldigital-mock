@@ -5,6 +5,10 @@
   "go.formatTool": "goimports",
   "go.testFlags": ["-race", "-v"],
   "go.coverOnSave": false,
+  "go.diagnostic.vulncheck": "Off",
+  "gopls": {
+    "ui.vulncheck": "Off"
+  },
   "editor.formatOnSave": true,
   "[go]": {
     "editor.defaultFormatter": "golang.go",
