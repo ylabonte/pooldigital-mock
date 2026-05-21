@@ -93,7 +93,7 @@ jobs:
 
       - name: upload coverage + junit artifact
         if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.24'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-results
           path: |
@@ -148,7 +148,7 @@ jobs:
       - name: build
         run: CGO_ENABLED=0 go build -trimpath -ldflags="-s -w" -o pooldigital-mock ./cmd/pooldigital-mock
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: pooldigital-mock-linux-amd64
           path: pooldigital-mock
