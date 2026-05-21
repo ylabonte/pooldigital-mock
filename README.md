@@ -2,7 +2,7 @@
 
 One lightweight Go binary that runs two pool-controller mocks concurrently:
 
-- **proconip** on port `8080` — mimics a [ProCon.IP](https://proconip.de) pool controller (CSV + basic auth)
+- **proconip** on port `8080` — mimics a [ProCon.IP](https://pooldigital.de) pool controller (CSV + basic auth)
 - **violet** on port `8180` — mimics a [Pooldigital Violet](https://pooldigital.de) controller (JSON, partial auth)
 
 Wire-compatible with the real devices for the endpoints it ships, so the matching client libraries (e.g. Home Assistant integrations) can run integration tests against this binary unchanged.
@@ -19,19 +19,19 @@ Both vendors ship Python mocks inside their respective client repos. This projec
 
 ### Pre-built binary
 
-Download from [Releases](https://github.com/yannicschroeer/pooldigital-mock/releases) (linux/macos/windows, amd64 + arm64).
+Download from [Releases](https://github.com/ylabonte/pooldigital-mock/releases) (linux/macos/windows, amd64 + arm64).
 
 ### Docker
 
 ```bash
 docker run --rm -p 8080:8080 -p 8180:8180 \
-  ghcr.io/yannicschroeer/pooldigital-mock:latest
+  ghcr.io/ylabonte/pooldigital-mock:latest
 ```
 
 ### From source
 
 ```bash
-go install github.com/yannicschroeer/pooldigital-mock/cmd/pooldigital-mock@latest
+go install github.com/ylabonte/pooldigital-mock/cmd/pooldigital-mock@latest
 ```
 
 ## Quickstart
@@ -108,12 +108,12 @@ Drift applies to `pH_value`, `orp_value`, `pot_value`, `CPU_TEMP`. Seed snapshot
 
 ```bash
 # default ports
-docker run --rm -p 8080:8080 -p 8180:8180 ghcr.io/yannicschroeer/pooldigital-mock:latest
+docker run --rm -p 8080:8080 -p 8180:8180 ghcr.io/ylabonte/pooldigital-mock:latest
 
 # customise credentials
 docker run --rm -p 8080:8080 -p 8180:8180 \
   -e PROCONIP_MOCK_USER=alice -e PROCONIP_MOCK_PASS=secret \
-  ghcr.io/yannicschroeer/pooldigital-mock:latest --quiet
+  ghcr.io/ylabonte/pooldigital-mock:latest --quiet
 
 # build locally
 make docker && docker run --rm -p 8080:8080 -p 8180:8180 pooldigital-mock:dev

@@ -13,9 +13,9 @@ import (
 
 	"github.com/spf13/pflag"
 
-	"github.com/yannicschroeer/pooldigital-mock/internal/logx"
-	"github.com/yannicschroeer/pooldigital-mock/internal/proconip"
-	"github.com/yannicschroeer/pooldigital-mock/internal/violet"
+	"github.com/ylabonte/pooldigital-mock/internal/logx"
+	"github.com/ylabonte/pooldigital-mock/internal/proconip"
+	"github.com/ylabonte/pooldigital-mock/internal/violet"
 )
 
 const (

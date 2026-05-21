@@ -1,4 +1,4 @@
-module github.com/yannicschroeer/pooldigital-mock
+module github.com/ylabonte/pooldigital-mock
 
 go 1.23
 

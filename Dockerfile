@@ -23,7 +23,7 @@ FROM gcr.io/distroless/static:nonroot
 
 LABEL org.opencontainers.image.title="pooldigital-mock"
 LABEL org.opencontainers.image.description="Combined ProCon.IP + Violet pool-controller mocks"
-LABEL org.opencontainers.image.source="https://github.com/yannicschroeer/pooldigital-mock"
+LABEL org.opencontainers.image.source="https://github.com/ylabonte/pooldigital-mock"
 LABEL org.opencontainers.image.licenses="MIT"
 
 COPY --from=build /out/pooldigital-mock /pooldigital-mock

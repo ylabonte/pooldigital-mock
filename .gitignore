@@ -2,6 +2,8 @@
 /pooldigital-mock
 /dist/
 /bin/
+# dlv leaves these when you stop a debug session abnormally
+__debug_bin*
 
 # Test/coverage artifacts
 coverage.out

@@ -50,8 +50,8 @@ changelog:
 
 dockers:
   - image_templates:
-      - "ghcr.io/yannicschroeer/pooldigital-mock:{{ .Version }}-amd64"
-      - "ghcr.io/yannicschroeer/pooldigital-mock:latest-amd64"
+      - "ghcr.io/ylabonte/pooldigital-mock:{{ .Version }}-amd64"
+      - "ghcr.io/ylabonte/pooldigital-mock:latest-amd64"
     use: buildx
     goos: linux
     goarch: amd64
@@ -60,15 +60,15 @@ dockers:
       - "--platform=linux/amd64"
       - "--label=org.opencontainers.image.title=pooldigital-mock"
       - "--label=org.opencontainers.image.description=Combined ProCon.IP + Violet pool-controller mocks"
-      - "--label=org.opencontainers.image.url=https://github.com/yannicschroeer/pooldigital-mock"
-      - "--label=org.opencontainers.image.source=https://github.com/yannicschroeer/pooldigital-mock"
+      - "--label=org.opencontainers.image.url=https://github.com/ylabonte/pooldigital-mock"
+      - "--label=org.opencontainers.image.source=https://github.com/ylabonte/pooldigital-mock"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.licenses=MIT"
 
   - image_templates:
-      - "ghcr.io/yannicschroeer/pooldigital-mock:{{ .Version }}-arm64"
-      - "ghcr.io/yannicschroeer/pooldigital-mock:latest-arm64"
+      - "ghcr.io/ylabonte/pooldigital-mock:{{ .Version }}-arm64"
+      - "ghcr.io/ylabonte/pooldigital-mock:latest-arm64"
     use: buildx
     goos: linux
     goarch: arm64
@@ -77,21 +77,21 @@ dockers:
       - "--platform=linux/arm64"
       - "--label=org.opencontainers.image.title=pooldigital-mock"
       - "--label=org.opencontainers.image.description=Combined ProCon.IP + Violet pool-controller mocks"
-      - "--label=org.opencontainers.image.url=https://github.com/yannicschroeer/pooldigital-mock"
-      - "--label=org.opencontainers.image.source=https://github.com/yannicschroeer/pooldigital-mock"
+      - "--label=org.opencontainers.image.url=https://github.com/ylabonte/pooldigital-mock"
+      - "--label=org.opencontainers.image.source=https://github.com/ylabonte/pooldigital-mock"
       - "--label=org.opencontainers.image.version={{ .Version }}"
       - "--label=org.opencontainers.image.revision={{ .FullCommit }}"
       - "--label=org.opencontainers.image.licenses=MIT"
 
 docker_manifests:
-  - name_template: "ghcr.io/yannicschroeer/pooldigital-mock:{{ .Version }}"
+  - name_template: "ghcr.io/ylabonte/pooldigital-mock:{{ .Version }}"
     image_templates:
-      - "ghcr.io/yannicschroeer/pooldigital-mock:{{ .Version }}-amd64"
-      - "ghcr.io/yannicschroeer/pooldigital-mock:{{ .Version }}-arm64"
-  - name_template: "ghcr.io/yannicschroeer/pooldigital-mock:latest"
+      - "ghcr.io/ylabonte/pooldigital-mock:{{ .Version }}-amd64"
+      - "ghcr.io/ylabonte/pooldigital-mock:{{ .Version }}-arm64"
+  - name_template: "ghcr.io/ylabonte/pooldigital-mock:latest"
     image_templates:
-      - "ghcr.io/yannicschroeer/pooldigital-mock:latest-amd64"
-      - "ghcr.io/yannicschroeer/pooldigital-mock:latest-arm64"
+      - "ghcr.io/ylabonte/pooldigital-mock:latest-amd64"
+      - "ghcr.io/ylabonte/pooldigital-mock:latest-arm64"
 
 release:
   draft: false
