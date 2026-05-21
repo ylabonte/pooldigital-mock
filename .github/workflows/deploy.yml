@@ -5,6 +5,12 @@ on:
     workflows: ["CI"]
     branches: [main]
     types: [completed]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag to deploy (overrides the IMAGE_TAG repo variable for this run only). Leave empty to use the configured value.'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -16,11 +22,11 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.workflow_run.head_sha }}
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: install ssh key
         env:
@@ -48,14 +54,20 @@ jobs:
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_PORT: ${{ secrets.SSH_PORT || '22' }}
           SSH_USER: ${{ secrets.SSH_USER }}
+          # Tag resolution: explicit workflow_dispatch input > repo
+          # variable > "edge" fallback. Pin the deployment to a release
+          # by setting Settings → Variables → IMAGE_TAG to e.g. 0.1.0;
+          # leave it unset (or set to "edge") to track main HEAD.
+          IMAGE_TAG: ${{ inputs.image_tag || vars.IMAGE_TAG || 'edge' }}
           PROCONIP_MOCK_USER: ${{ secrets.PROCONIP_MOCK_USER }}
           PROCONIP_MOCK_PASS: ${{ secrets.PROCONIP_MOCK_PASS }}
           MYVIOLET_MOCK_USER: ${{ secrets.MYVIOLET_MOCK_USER }}
           MYVIOLET_MOCK_PASS: ${{ secrets.MYVIOLET_MOCK_PASS }}
         run: |
+          echo "Deploying IMAGE_TAG=${IMAGE_TAG}"
           ssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
             "cat > /srv/pooldigital-mock/.env" <<EOF
-          IMAGE_TAG=edge
+          IMAGE_TAG=${IMAGE_TAG}
           PROCONIP_MOCK_USER=${PROCONIP_MOCK_USER}
           PROCONIP_MOCK_PASS=${PROCONIP_MOCK_PASS}
           MYVIOLET_MOCK_USER=${MYVIOLET_MOCK_USER}
