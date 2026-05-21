@@ -1,0 +1,63 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "go: test (race)",
+      "type": "shell",
+      "command": "make test",
+      "group": { "kind": "test", "isDefault": true },
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "go: cover (enforce floor)",
+      "type": "shell",
+      "command": "make cover",
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "go: cover HTML report",
+      "type": "shell",
+      "command": "make cover-html",
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "go: lint (golangci-lint)",
+      "type": "shell",
+      "command": "make lint",
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "go: vet",
+      "type": "shell",
+      "command": "make vet",
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "go: build",
+      "type": "shell",
+      "command": "make build",
+      "group": { "kind": "build", "isDefault": true },
+      "problemMatcher": "$go"
+    },
+    {
+      "label": "go: run",
+      "type": "shell",
+      "command": "make run",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: build image",
+      "type": "shell",
+      "command": "make docker",
+      "problemMatcher": []
+    },
+    {
+      "label": "docker: build + run image",
+      "type": "shell",
+      "command": "make docker-run",
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}

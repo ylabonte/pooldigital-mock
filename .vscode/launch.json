@@ -1,0 +1,75 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run pooldigital-mock",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/cmd/pooldigital-mock",
+      "console": "integratedTerminal",
+      "args": []
+    },
+    {
+      "name": "Run pooldigital-mock (custom ports 18080/18180)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/cmd/pooldigital-mock",
+      "console": "integratedTerminal",
+      "args": [
+        "--host=127.0.0.1",
+        "--proconip-port=18080",
+        "--violet-port=18180"
+      ]
+    },
+    {
+      "name": "Run pooldigital-mock (quiet, no-color)",
+      "type": "go",
+      "request": "launch",
+      "mode": "auto",
+      "program": "${workspaceFolder}/cmd/pooldigital-mock",
+      "console": "integratedTerminal",
+      "args": ["--quiet", "--no-color"]
+    },
+    {
+      "name": "Debug current Go test file",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}"
+    },
+    {
+      "name": "Debug current Go test (by name)",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${fileDirname}",
+      "args": ["-test.run", "${input:testName}", "-test.v"]
+    },
+    {
+      "name": "Debug all tests (race)",
+      "type": "go",
+      "request": "launch",
+      "mode": "test",
+      "program": "${workspaceFolder}",
+      "args": ["-test.v"],
+      "buildFlags": "-race"
+    },
+    {
+      "name": "Attach to running pooldigital-mock",
+      "type": "go",
+      "request": "attach",
+      "mode": "local",
+      "processId": 0
+    }
+  ],
+  "inputs": [
+    {
+      "id": "testName",
+      "type": "promptString",
+      "description": "Test name regex (e.g. TestGetState.*)",
+      "default": "TestGetStateRequiresAuth"
+    }
+  ]
+}

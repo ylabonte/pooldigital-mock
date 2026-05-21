@@ -1,0 +1,9 @@
+{
+  "recommendations": [
+    "golang.go",
+    "ms-azuretools.vscode-docker",
+    "github.vscode-github-actions",
+    "editorconfig.editorconfig",
+    "ms-vscode-remote.remote-containers"
+  ]
+}

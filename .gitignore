@@ -12,7 +12,10 @@ coverage.html
 # Editor / OS
 .DS_Store
 .idea/
-.vscode/
+.vscode/*
 !.vscode/extensions.json
+!.vscode/launch.json
+!.vscode/tasks.json
+!.vscode/settings.json
 *.swp
 *.swo
