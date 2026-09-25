@@ -2,7 +2,7 @@
 # by .github/workflows/deploy.yml. Both ports bind to the host's loopback only;
 # the VPS-side nginx terminates TLS and reverse-proxies to these addresses.
 #
-#   proconip.mock.pool.labonte.cloud → 127.0.0.1:18080  (basic auth)
+#   proconip.mock.pool.labonte.cloud → 127.0.0.1:18080  (open reads, basic-auth writes)
 #   violet.mock.pool.labonte.cloud   → 127.0.0.1:18180  (mostly anonymous)
 #
 # The host-side ports use the 1808x range because the VPS already runs other
