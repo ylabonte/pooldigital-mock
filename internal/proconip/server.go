@@ -35,8 +35,16 @@ func methodOnly(method string, next http.HandlerFunc) http.HandlerFunc {
 	}
 }
 
+// openReads are the GET paths real ProCon.IP firmware serves without auth; only writes are gated.
+var openReads = map[string]bool{"/GetState.csv": true, "/GetDmx.csv": true}
+
+// basicAuth gates every request except the open reads.
 func basicAuth(user, pass string, next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == http.MethodGet && openReads[r.URL.Path] {
+			next.ServeHTTP(w, r)
+			return
+		}
 		u, p, ok := r.BasicAuth()
 		if !ok || subtle.ConstantTimeCompare([]byte(u), []byte(user)) != 1 ||
 			subtle.ConstantTimeCompare([]byte(p), []byte(pass)) != 1 {

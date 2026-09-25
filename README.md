@@ -10,7 +10,7 @@
 
 One lightweight Go binary that runs two pool-controller mocks concurrently:
 
-- **proconip** on port `8080` — mimics a [ProCon.IP](https://pooldigital.de) pool controller (CSV + basic auth)
+- **proconip** on port `8080` — mimics a [ProCon.IP](https://pooldigital.de) pool controller (CSV; open reads, basic-auth writes)
 - **violet** on port `8180` — mimics a [Pooldigital Violet](https://pooldigital.de) controller (JSON, partial auth)
 
 Wire-compatible with the real devices for the endpoints it ships, so the matching client libraries (e.g. Home Assistant integrations) can run integration tests against this binary unchanged.
@@ -74,7 +74,7 @@ You'll see a startup banner and a stream of colored request lines, one per HTTP 
 Hit either endpoint:
 
 ```bash
-curl -u admin:admin http://localhost:8080/GetState.csv
+curl http://localhost:8080/GetState.csv
 curl              http://localhost:8180/getReadings?ALL
 ```
 
@@ -101,8 +101,8 @@ curl              http://localhost:8180/getReadings?ALL
 
 | Method + path | Auth | What it does |
 |---------------|------|--------------|
-| `GET /GetState.csv` | basic | drifted sensor readings + relay state, CSV body |
-| `GET /GetDmx.csv` | basic | current 16-channel DMX state |
+| `GET /GetState.csv` | none | drifted sensor readings + relay state, CSV body |
+| `GET /GetDmx.csv` | none | current 16-channel DMX state |
 | `POST /usrcfg.cgi` | basic | accepts `ENA=...` relay or `CH1_8=...&CH9_16=...` DMX writes |
 | `GET /Command.htm?MAN_DOSAGE=t,s` | basic | manual dosage trigger |
 

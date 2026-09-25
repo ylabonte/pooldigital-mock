@@ -36,15 +36,39 @@ func doRequest(t *testing.T, srv *httptest.Server, method, path string, body io.
 	return resp
 }
 
-func TestGetStateRequiresAuth(t *testing.T) {
-	srv, _ := newTestServer(t)
-	resp := doRequest(t, srv, http.MethodGet, "/GetState.csv", nil, false)
-	defer func() { _ = resp.Body.Close() }()
-	if resp.StatusCode != http.StatusUnauthorized {
-		t.Errorf("status = %d, want 401", resp.StatusCode)
+func TestAuthGatesWritesOnly(t *testing.T) {
+	cases := []struct {
+		name     string
+		method   string
+		path     string
+		body     string
+		withAuth bool
+		want     int
+	}{
+		{"GetState open without auth", http.MethodGet, "/GetState.csv", "", false, http.StatusOK},
+		{"GetDmx open without auth", http.MethodGet, "/GetDmx.csv", "", false, http.StatusOK},
+		{"usrcfg write needs auth", http.MethodPost, "/usrcfg.cgi", "ENA=0,0", false, http.StatusUnauthorized},
+		{"Command write needs auth", http.MethodGet, "/Command.htm?MAN_DOSAGE=0,60", "", false, http.StatusUnauthorized},
+		{"non-GET on open read still gated", http.MethodPut, "/GetState.csv", "", false, http.StatusUnauthorized},
 	}
-	if got := resp.Header.Get("WWW-Authenticate"); !strings.Contains(got, "Basic") {
-		t.Errorf("missing or bad WWW-Authenticate: %q", got)
+	for _, tc := range cases {
+		t.Run(tc.name, func(t *testing.T) {
+			srv, _ := newTestServer(t)
+			var body io.Reader
+			if tc.body != "" {
+				body = strings.NewReader(tc.body)
+			}
+			resp := doRequest(t, srv, tc.method, tc.path, body, tc.withAuth)
+			defer func() { _ = resp.Body.Close() }()
+			if resp.StatusCode != tc.want {
+				t.Errorf("status = %d, want %d", resp.StatusCode, tc.want)
+			}
+			if tc.want == http.StatusUnauthorized {
+				if got := resp.Header.Get("WWW-Authenticate"); !strings.Contains(got, "Basic") {
+					t.Errorf("missing or bad WWW-Authenticate: %q", got)
+				}
+			}
+		})
 	}
 }
 
@@ -172,7 +196,8 @@ func TestMethodNotAllowed(t *testing.T) {
 
 func TestBadCredentials(t *testing.T) {
 	srv, _ := newTestServer(t)
-	req, _ := http.NewRequest(http.MethodGet, srv.URL+"/GetState.csv", nil)
+	req, _ := http.NewRequest(http.MethodPost, srv.URL+"/usrcfg.cgi", strings.NewReader("ENA=0,0"))
+	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
 	req.SetBasicAuth("evil", "hacker")
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
