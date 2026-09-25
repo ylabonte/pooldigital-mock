@@ -83,14 +83,22 @@ func TestRunStartsBothServers(t *testing.T) {
 	procURL, violetURL, cleanup := startServers(t)
 	defer cleanup()
 
-	// proconip requires auth
+	// proconip reads are anonymous, writes require auth
 	resp, err := http.Get(procURL + "/GetState.csv")
 	if err != nil {
 		t.Fatalf("proconip Get: %v", err)
 	}
 	_ = resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("proconip read status = %d, want 200", resp.StatusCode)
+	}
+	resp, err = http.Post(procURL+"/usrcfg.cgi", "application/x-www-form-urlencoded", strings.NewReader("ENA=0,0"))
+	if err != nil {
+		t.Fatalf("proconip Post: %v", err)
+	}
+	_ = resp.Body.Close()
 	if resp.StatusCode != http.StatusUnauthorized {
-		t.Errorf("proconip status = %d, want 401", resp.StatusCode)
+		t.Errorf("proconip write status = %d, want 401", resp.StatusCode)
 	}
 
 	// violet /getReadings is anonymous
