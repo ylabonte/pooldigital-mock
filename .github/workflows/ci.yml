@@ -191,3 +191,24 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=edge-${{ github.sha }}
+
+  # Known-vulnerability gate. govulncheck checks the Go toolchain this job builds
+  # with AND the module graph against the Go vulnerability database, and fails only
+  # on vulnerabilities our code actually CALLS. Never add exclusions: fix the cause.
+  # This job must follow the RELEASE Go (check-latest picks the newest patch) and
+  # must NOT use the 1.24 matrix leg of `test`: Go 1.24 is out of support, so
+  # govulncheck would always flag its stdlib. That leg only tests the go.mod minimum.
+  govulncheck:
+    name: govulncheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: "1.26"
+          check-latest: true
+          cache: true
+
+      - name: govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
