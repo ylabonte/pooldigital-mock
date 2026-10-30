@@ -16,7 +16,7 @@ State is in-memory only; nothing is persisted across process restarts.
 
 ## Stack
 
-- Go 1.22+
+- Go 1.24+ (go.mod minimum); builds and CI use Go 1.27
 - stdlib `net/http`
 - `//go:embed` for the violet seed JSON and proconip CSV fixtures
 - `github.com/charmbracelet/lipgloss` — banner box and colored output
