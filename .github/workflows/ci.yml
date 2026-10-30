@@ -17,7 +17,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        go: ["1.24", "1.26"]
+        go: ["1.24", "1.27"]
     steps:
       - uses: actions/checkout@v7
 
@@ -47,7 +47,7 @@ jobs:
             -- -race -covermode=atomic -coverprofile=coverage.out ./...
 
       - name: enforce coverage floor
-        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
+        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.27'
         shell: bash
         run: |
           total=$(go tool cover -func=coverage.out | awk '/^total:/ {print $3}' | tr -d '%')
@@ -58,7 +58,7 @@ jobs:
           }
 
       - name: write test + coverage summary
-        if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.27'
         shell: bash
         run: |
           total=$(go tool cover -func=coverage.out | awk '/^total:/ {print $3}')
@@ -93,7 +93,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: upload coverage + junit artifact
-        if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.27'
         uses: actions/upload-artifact@v7
         with:
           name: test-results
@@ -103,7 +103,7 @@ jobs:
           retention-days: 14
 
       - name: upload coverage to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
+        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.27'
         uses: codecov/codecov-action@v7
         with:
           files: ./coverage.out
@@ -127,24 +127,24 @@ jobs:
 
       - uses: actions/setup-go@v7
         with:
-          go-version: "1.26"
+          go-version: "1.27"
           check-latest: true
           cache: true
 
       - uses: golangci/golangci-lint-action@v9
         with:
-          version: v2.12.2
+          version: v2.14.0
 
   build:
     name: build
     runs-on: ubuntu-latest
-    needs: [test, lint]
+    needs: [test, lint, govulncheck]
     steps:
       - uses: actions/checkout@v7
 
       - uses: actions/setup-go@v7
         with:
-          go-version: "1.26"
+          go-version: "1.27"
           check-latest: true
           cache: true
 
@@ -160,7 +160,7 @@ jobs:
   docker-edge:
     name: build + push edge image
     runs-on: ubuntu-latest
-    needs: [test, lint, build]
+    needs: [test, lint, govulncheck, build]
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     permissions:
       contents: read
@@ -191,3 +191,36 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             VERSION=edge-${{ github.sha }}
+
+  # Known-vulnerability gate. govulncheck checks the Go toolchain this job builds
+  # with AND the module graph against the Go vulnerability database, and fails only
+  # on vulnerabilities our code actually CALLS. Never add exclusions: fix the cause.
+  # It scans the Go of the shipped edge image, read from the Dockerfile's
+  # `FROM golang:<version>` line, NOT the newest patch: with check-latest the
+  # gate would go green on a fresh Go security release while the pinned image
+  # still ships the vulnerable one. Release binaries use setup-go's newest 1.x
+  # patch, which is never older than this pin. It must NOT use the 1.24 matrix
+  # leg of `test`: Go 1.24 is out of support, so govulncheck would always flag
+  # its stdlib. That leg only tests the go.mod minimum.
+  govulncheck:
+    name: govulncheck
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: read the image's Go version
+        id: imagego
+        run: |
+          v=$(sed -nE 's/^FROM golang:([0-9]+\.[0-9]+\.[0-9]+)-alpine.*/\1/p' Dockerfile | head -n1)
+          [ -n "$v" ] || { echo "::error::no 'FROM golang:X.Y.Z-alpine' line in Dockerfile"; exit 1; }
+          echo "go=$v" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ steps.imagego.outputs.go }}
+          cache: true
+
+      - name: govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
