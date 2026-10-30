@@ -1,0 +1,50 @@
+# Daily scan for newly published Go and dependency vulnerabilities.
+#
+# A SEPARATE workflow on purpose: a `schedule:` trigger in ci.yml would make every
+# cron run build and push images. The PR-time gate is the govulncheck job in
+# ci.yml; this file only re-runs the same scan on a timer, so a vulnerability
+# published in a quiet week does not stay unseen until the next push.
+#
+# A red run means a NEW vulnerability was published (or became reachable) since the
+# last green scan: fix the root cause (bump the Go toolchain or the module). Never
+# add exclusions here.
+#
+# govulncheck is pinned like the ci.yml gate; bump both together.
+#
+# GitHub disables scheduled workflows in a public repo after 60 days without
+# repository activity, which is exactly the quiet spell this scan is for. If
+# the Actions tab shows "This scheduled workflow is disabled", re-enable it
+# there or with `gh workflow enable vulncheck.yml -R ylabonte/pooldigital-mock`.
+name: vulncheck
+
+on:
+  schedule:
+    - cron: "17 5 * * *"
+  workflow_dispatch:
+
+jobs:
+  govulncheck:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+
+      # Scan with the Go the image is built with (the Dockerfile's golang tag), not
+      # an older go.mod minimum.
+      - name: read the image's Go version
+        id: imagego
+        run: |
+          v=$(sed -nE 's/^FROM golang:([0-9]+\.[0-9]+\.[0-9]+)-alpine.*/\1/p' Dockerfile | head -n1)
+          [ -n "$v" ] || { echo "::error::no 'FROM golang:X.Y.Z-alpine' line in Dockerfile"; exit 1; }
+          echo "go=$v" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-go@v7
+        with:
+          go-version: ${{ steps.imagego.outputs.go }}
+          cache: true
+
+      - name: govulncheck
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
