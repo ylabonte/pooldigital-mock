@@ -17,13 +17,14 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu-latest, macos-latest, windows-latest]
-        go: ["1.24", "1.26.10"]
+        go: ["1.24", "1.26"]
     steps:
       - uses: actions/checkout@v7
 
       - uses: actions/setup-go@v7
         with:
           go-version: ${{ matrix.go }}
+          check-latest: true
           cache: true
 
       - name: go mod download
@@ -46,7 +47,7 @@ jobs:
             -- -race -covermode=atomic -coverprofile=coverage.out ./...
 
       - name: enforce coverage floor
-        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26.10'
+        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
         shell: bash
         run: |
           total=$(go tool cover -func=coverage.out | awk '/^total:/ {print $3}' | tr -d '%')
@@ -57,7 +58,7 @@ jobs:
           }
 
       - name: write test + coverage summary
-        if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.26.10'
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
         shell: bash
         run: |
           total=$(go tool cover -func=coverage.out | awk '/^total:/ {print $3}')
@@ -92,7 +93,7 @@ jobs:
           } >> "$GITHUB_STEP_SUMMARY"
 
       - name: upload coverage + junit artifact
-        if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.26.10'
+        if: always() && matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
         uses: actions/upload-artifact@v7
         with:
           name: test-results
@@ -102,7 +103,7 @@ jobs:
           retention-days: 14
 
       - name: upload coverage to Codecov
-        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26.10'
+        if: matrix.os == 'ubuntu-latest' && matrix.go == '1.26'
         uses: codecov/codecov-action@v7
         with:
           files: ./coverage.out
@@ -126,7 +127,8 @@ jobs:
 
       - uses: actions/setup-go@v7
         with:
-          go-version: "1.26.10"
+          go-version: "1.26"
+          check-latest: true
           cache: true
 
       - uses: golangci/golangci-lint-action@v9
@@ -142,7 +144,8 @@ jobs:
 
       - uses: actions/setup-go@v7
         with:
-          go-version: "1.26.10"
+          go-version: "1.26"
+          check-latest: true
           cache: true
 
       - name: build
